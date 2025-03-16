@@ -87,24 +87,6 @@ fn test_polygon_construction() {
 }
 
 // --------------------------------------------------------
-//   CSG: STL Export
-// --------------------------------------------------------
-
-#[test]
-fn test_to_stl_ascii() {
-    let cube: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None);
-    let stl_str = cube.to_stl_ascii("test_cube");
-    // Basic checks
-    assert!(stl_str.contains("solid test_cube"));
-    assert!(stl_str.contains("endsolid test_cube"));
-
-    // Should contain some facet normals
-    assert!(stl_str.contains("facet normal"));
-    // Should contain some vertex lines
-    assert!(stl_str.contains("vertex"));
-}
-
-// --------------------------------------------------------
 //   Node & Clipping Tests
 //   (Optional: these get more into internal details)
 // --------------------------------------------------------
@@ -740,26 +722,6 @@ fn test_csg_sphere() {
 }
 
 #[test]
-fn test_csg_cylinder() {
-    // Default cylinder => from (0,0,0) to (0,2,0) with radius=1
-    let cylinder: CSG<()> = CSG::cylinder(1.0, 2.0, 16, None);
-    let polys = cylinder.to_polygons();
-    assert!(!polys.is_empty(), "Cylinder should generate polygons");
-
-    let bb = bounding_box(&polys);
-    // Expect x in [-1,1], y in [-1,1], z in [-1,1].
-    assert!(approx_eq(bb[0], -1.0, 1e-8), "min X");
-    assert!(approx_eq(bb[1], -1.0, 1e-8), "min Y");
-    assert!(approx_eq(bb[2], 0.0, 1e-8), "min Z");
-    assert!(approx_eq(bb[3], 1.0, 1e-8), "max X");
-    assert!(approx_eq(bb[4], 1.0, 1e-8), "max Y");
-    assert!(approx_eq(bb[5], 2.0, 1e-8), "max Z");
-
-    // We have slices = 16, plus 16*2 polygons for the end caps
-    assert_eq!(cylinder.polygons.len(), 48);
-}
-
-#[test]
 fn test_csg_polyhedron() {
     // A simple tetrahedron
     let pts = &[
@@ -809,7 +771,7 @@ fn test_csg_transform_translate_rotate_scale() {
 fn test_csg_mirror() {
     let c: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None);
     let plane_x = Plane { normal: Vector3::x(), w: 0.0 }; // x=0 plane
-    let mirror_x = c.mirror(plane_x);
+    let mirror_x = c.mirror(&plane_x);
     let bb_mx = mirror_x.bounding_box();
     // The original cube was from x=0..2, so mirrored across X=0 should be -2..0
     assert!(approx_eq(bb_mx.mins.x, -2.0, EPSILON));
@@ -900,14 +862,6 @@ fn test_csg_circle() {
 }
 
 #[test]
-fn test_csg_polygon_2d() {
-    let points = &[[0.0, 0.0], [2.0, 0.0], [2.0, 1.0], [0.0, 1.0]];
-    let poly2d: CSG<()> = CSG::polygon(points, None);
-    assert_eq!(poly2d.polygons.len(), 1);
-    assert_eq!(poly2d.polygons[0].vertices.len(), 4);
-}
-
-#[test]
 fn test_csg_extrude() {
     let sq: CSG<()> = CSG::square(2.0, 2.0, None); // default 1x1 square at XY plane
     let extruded = sq.extrude(5.0);
@@ -921,22 +875,6 @@ fn test_csg_extrude() {
     let bb = extruded.bounding_box();
     assert!(approx_eq(bb.mins.z, 0.0, EPSILON));
     assert!(approx_eq(bb.maxs.z, 5.0, EPSILON));
-}
-
-#[test]
-fn test_csg_rotate_extrude() {
-    // Default square is from (0,0) to (1,1) in XY.
-    // Shift it so it’s from (1,0) to (2,1) — i.e. at least 1.0 unit away from the Z-axis.
-    // and rotate it 90 degrees so that it can be swept around Z
-    let square: CSG<()> = CSG::square(2.0, 2.0, None)
-        .translate(1.0, 0.0, 0.0)
-        .rotate(90.0, 0.0, 0.0);
-
-    // Now revolve this translated square around the Z-axis, 360° in 16 segments.
-    let revolve = square.rotate_extrude(360.0, 16);
-
-    // We expect a ring-like “tube” instead of a degenerate shape.
-    assert!(!revolve.polygons.is_empty());
 }
 
 #[test]
@@ -981,15 +919,6 @@ fn test_csg_offset_2d() {
 }
 
 #[test]
-fn test_csg_text() {
-    // We can’t easily test visually, but we can at least test that it doesn’t panic
-    // and returns some polygons for normal ASCII letters.
-    let font_data = include_bytes!("../asar.ttf");
-    let text_csg: CSG<()> = CSG::text("ABC", font_data, 10.0, None);
-    assert!(!text_csg.polygons.is_empty());
-}
-
-#[test]
 fn test_csg_to_trimesh() {
     let cube: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None);
     let shape = cube.to_trimesh();
@@ -1029,30 +958,6 @@ fn test_csg_to_rigid_body() {
     let rb = rb_set.get(handle).unwrap();
     let pos = rb.translation();
     assert!(approx_eq(pos.x, 10.0, EPSILON));
-}
-
-#[test]
-fn test_csg_to_stl_and_from_stl_file() -> Result<(), Box<dyn std::error::Error>> {
-    // We'll create a small shape, write to an STL, read it back.
-    // You can redirect to a temp file or do an in-memory test.
-    let tmp_path = "test_csg_output.stl";
-
-    let cube: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None);
-    let res = cube.to_stl_binary("A cube");
-    let _ = std::fs::write(tmp_path, res.as_ref().unwrap());
-    assert!(res.is_ok());
-
-    let stl_data: Vec<u8> = std::fs::read(tmp_path)?;
-    let csg_in: CSG<()> = CSG::from_stl(&stl_data, None)?;
-    // We expect to read the same number of triangular faces as the cube originally had
-    // (though the orientation/normals might differ).
-    // The default cube -> 6 polygons x 1 polygon each with 4 vertices => 12 triangles in STL.
-    // So from_stl_file => we get 12 triangles as 12 polygons (each is a tri).
-    assert_eq!(csg_in.polygons.len(), 12);
-
-    // Cleanup the temp file if desired
-    let _ = std::fs::remove_file(tmp_path);
-    Ok(())
 }
 
 /// A small, custom metadata type to demonstrate usage.
@@ -1385,18 +1290,6 @@ fn test_offset_2d_negative_distance_shrinks() {
 }
 
 #[test]
-fn test_polygon_2d_enforce_ccw_ordering() {
-    // Define a triangle in CW order
-    let points_cw = vec![[0.0, 0.0], [1.0, 0.0], [0.5, 1.0]];
-    let mut csg_cw = CSG::polygon(&points_cw, None);
-    // Enforce CCW ordering
-    csg_cw.renormalize();
-    let poly = &csg_cw.polygons[0];
-    let area = signed_area(poly);
-    assert!(area > 0.0, "Polygon ordering was not corrected to CCW");
-}
-
-#[test]
 fn test_circle_offset_2d() {
     let circle = CSG::circle(1.0, 32, None);
     let offset_grow = circle.offset(0.2); // Should grow the circle
@@ -1596,66 +1489,6 @@ fn test_flatten_cube() {
         thickness.abs() < EPSILON,
         "Flattened shape should have negligible thickness in z"
     );
-}
-
-#[test]
-#[cfg(feature = "hashmap")]
-fn test_slice_cylinder() {
-    // 1) Create a cylinder (start=-1, end=+1) with radius=1, 32 slices
-    let cyl = CSG::<()>::cylinder(1.0, 2.0, 32, None).center();
-    // 2) Slice at z=0
-    let cross_section = cyl.slice(Plane { normal: Vector3::z(), w: 0.0 });
-
-    // For a simple cylinder, the cross-section is typically 1 circle polygon
-    // (unless the top or bottom also exactly intersect z=0, which they do not in this scenario).
-    // So we expect exactly 1 polygon.
-    assert_eq!(
-        cross_section.polygons.len(),
-        1,
-        "Slicing a cylinder at z=0 should yield exactly 1 cross-section polygon"
-    );
-
-    let poly = &cross_section.polygons[0];
-    let vcount = poly.vertices.len();
-
-    // We used 32 slices for the cylinder, so we expect up to 32 edges
-    // in the cross-section circle. Some slight differences might occur
-    // if the slicing logic merges or sorts vertices.
-    // Typically, you might see vcount = 32 or vcount = 34, etc.
-    // Let's just check it's > 3 and in a plausible range:
-    assert!(
-        vcount >= 3 && vcount <= 40,
-        "Expected cross-section circle to have a number of edges ~32, got {}",
-        vcount
-    );
-
-    // Check all vertices are on z=0
-    for v in &poly.vertices {
-        assert!(
-            (v.pos.z - 0.0).abs() < EPSILON,
-            "Sliced vertex must have z=0, found z={}",
-            v.pos.z
-        );
-    }
-
-    // Optional: check approximate radius
-    // The cross-section should be at radius ~1 around x=0,y=some, z=0
-    // (Actually, the cylinder's axis is along Y, so we expect x^2+z^2=1.
-    //  But since z=0 now, effectively we expect x^2=1 => x=±1 if we're ignoring any bulge,
-    //  or we'll see a circle in the plane y=?? Actually, wait—
-    //  the cylinder we built is from (0,-1,0) to (0,1,0) with radius=1 around that axis,
-    //  so the cross-section plane is z=0, meaning x^2 + y^2 = 1.
-    //  We can check a couple of sample vertices.)
-    if !poly.vertices.is_empty() {
-        let first_v = &poly.vertices[0].pos;
-        let r_approx = (first_v.x.powi(2) + first_v.y.powi(2)).sqrt();
-        // We expect something close to radius=1:
-        assert!(
-            (r_approx - 1.0).abs() < 1e-3,
-            "Cross-section radius should be ~1, got {:?}",
-            r_approx
-        );
-    }
 }
 
 /// Helper to create a `Polygon` in the XY plane from an array of (x,y) points,

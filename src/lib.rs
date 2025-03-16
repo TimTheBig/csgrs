@@ -1,5 +1,5 @@
 //#![allow(dead_code)]
-#![forbid(unsafe_code)]
+#![forbid(unsafe_code, unused)]
 
 pub mod errors;
 pub mod float_types;

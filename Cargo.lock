@@ -326,7 +326,7 @@ checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
 
 [[package]]
 name = "csgrs"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "chull",
  "contour_tracing",
@@ -336,8 +336,6 @@ dependencies = [
  "geo",
  "geo-buf",
  "hashbrown 0.15.2",
- "hershey",
- "image",
  "nalgebra",
  "parry3d",
  "parry3d-f64",
@@ -345,8 +343,6 @@ dependencies = [
  "rapier3d-f64",
  "rayon",
  "stl_io",
- "ttf-parser",
- "ttf-utils",
 ]
 
 [[package]]
@@ -620,16 +616,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "hershey"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce68826993d2cfc80002b44fa5036064a1e5d543a19824c3891c05c705dcc2e4"
-dependencies = [
- "itertools 0.10.5",
- "thiserror",
-]
-
-[[package]]
 name = "i_float"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -754,15 +740,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
 ]
 
 [[package]]
@@ -1621,21 +1598,6 @@ dependencies = [
  "serde_spanned",
  "toml_datetime",
  "winnow",
-]
-
-[[package]]
-name = "ttf-parser"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3e7994fc4aed0ee366a4b0d01562c8a7cd5a5017088bceb6921b0c8c538f34e"
-
-[[package]]
-name = "ttf-utils"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ff12815494b93841cf044cc7793f0207d256ec6237a10fb6efcb4dd0b070d90"
-dependencies = [
- "ttf-parser",
 ]
 
 [[package]]

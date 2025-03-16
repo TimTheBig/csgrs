@@ -378,6 +378,13 @@ impl<S: Clone + Send + Sync> Node<S> {
         &self,
         slicing_plane: &Plane
     ) -> (Vec<Polygon<S>>, Vec<[Vertex; 2]>) {
+        // Classify each vertex relative to the slicing plane
+        // We store the classification (FRONT, BACK, COPLANAR) in `types`
+        const COPLANAR: i32 = 0;
+        const FRONT: i32 = 1;
+        const BACK: i32 = 2;
+        const SPANNING: i32 = 3;
+
         let all_polys = self.all_polygons();
 
         let mut coplanar_polygons = Vec::new();
@@ -388,13 +395,6 @@ impl<S: Clone + Send + Sync> Node<S> {
             if vcount < 2 {
                 continue; // degenerate polygon => skip
             }
-
-            // Classify each vertex relative to the slicing plane
-            // We store the classification (FRONT, BACK, COPLANAR) in `types`
-            const COPLANAR: i32 = 0;
-            const FRONT: i32 = 1;
-            const BACK: i32 = 2;
-            const SPANNING: i32 = 3;
 
             let mut polygon_type = 0;
             let mut types = Vec::with_capacity(vcount);

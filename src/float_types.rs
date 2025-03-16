@@ -1,4 +1,4 @@
-// Re-export parry and rapier for the apropriate float size
+// Re-export parry and rapier for the appropriate float size
 #[cfg(feature = "f64")]
 pub use parry3d_f64 as parry3d;
 #[cfg(feature = "f64")]
@@ -42,9 +42,15 @@ pub const TAU: Real = core::f64::consts::TAU;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Unit conversion
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/// ### Inch(`in`)
 pub const INCH: Real = 25.4;
+/// ### Foot(`ft`)
 pub const FOOT: Real =  25.4 * 12.0;
+/// ### Yard(`yd`)
 pub const YARD: Real = 25.4 * 36.0;
+/// ### Millimeter(`mm`)
 pub const MM: Real = 1.0;
+/// ### Centimeter(`cm`)
 pub const CM: Real = 10.0;
+/// ### Meter(`m`)
 pub const METER: Real = 1000.0;
