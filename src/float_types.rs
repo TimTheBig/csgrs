@@ -45,7 +45,7 @@ pub const TAU: Real = core::f64::consts::TAU;
 /// ### Inch(`in`)
 pub const INCH: Real = 25.4;
 /// ### Foot(`ft`)
-pub const FOOT: Real =  25.4 * 12.0;
+pub const FOOT: Real = 25.4 * 12.0;
 /// ### Yard(`yd`)
 pub const YARD: Real = 25.4 * 36.0;
 /// ### Millimeter(`mm`)
