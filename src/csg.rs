@@ -205,20 +205,20 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         result
     }
 
-    // Return a new CSG representing space in either this CSG or in the
-    // other CSG. Neither this CSG nor the other CSG are modified.
-    // 
-    //     let c = a.union(b);
-    // 
-    //     +-------+            +-------+
-    //     |       |            |       |
-    //     |   a   |            |       |
-    //     |    +--+----+   =   |       +----+
-    //     +----+--+    |       +----+       |
-    //          |   b   |            |       |
-    //          |       |            |       |
-    //          +-------+            +-------+
-    // 
+    /// Return a new CSG representing union of the two CSG's.
+    ///
+    /// ```no_run
+    /// let c = a.union(b);
+    ///     +-------+            +-------+
+    ///     |       |            |       |
+    ///     |   a   |            |   c   |
+    ///     |    +--+----+   =   |       +----+
+    ///     +----+--+    |       +----+       |
+    ///          |   b   |            |   c   |
+    ///          |       |            |       |
+    ///          +-------+            +-------+
+    /// ```
+    #[must_use = "Use new CSG representing space in both CSG's"]
     pub fn union(&self, other: &CSG<S>) -> CSG<S> {
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
@@ -229,26 +229,26 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         b.clip_to(&a);
         b.invert();
         a.build(&b.all_polygons());
-        
+
         // Extract polygons from geometry
         let polys1 = gc_to_polygons(&self.geometry);
         let polys2 = gc_to_polygons(&other.geometry);
-    
+
         // Perform union on those polygons
         let unioned = polys1.union(&polys2); // This is valid if each is a MultiPolygon
         let oriented = unioned.orient(Direction::Default);
-    
+
         // Wrap the unioned polygons + lines/points back into one GeometryCollection
         let mut final_gc = GeometryCollection::default();
         final_gc.0.push(Geometry::MultiPolygon(oriented));
-        
+
         // re-insert lines & points from both sets:
         for g in &self.geometry.0 {
             match g {
                 Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {
                     // skip polygons
                 }
-                _ => final_gc.0.push(g.clone())
+                _ => final_gc.0.push(g.clone()),
             }
         }
         for g in &other.geometry.0 {
@@ -256,7 +256,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
                 Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {
                     // skip polygons
                 }
-                _ => final_gc.0.push(g.clone())
+                _ => final_gc.0.push(g.clone()),
             }
         }
 
@@ -267,20 +267,20 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         }
     }
 
-    // Return a new CSG representing space in this CSG but not in the
-    // other CSG. Neither this CSG nor the other CSG are modified.
-    // 
-    //     let c = a.difference(b);
-    // 
-    //     +-------+            +-------+
-    //     |       |            |       |
-    //     |   a   |            |       |
-    //     |    +--+----+   =   |    +--+
-    //     +----+--+    |       +----+
-    //          |   b   |
-    //          |       |
-    //          +-------+
-    // 
+    /// Return a new CSG representing diffarence of the two CSG's.
+    ///
+    /// ```no_run
+    /// let c = a.difference(b);
+    ///     +-------+            +-------+
+    ///     |       |            |       |
+    ///     |   a   |            |   c   |
+    ///     |    +--+----+   =   |    +--+
+    ///     +----+--+    |       +----+
+    ///          |   b   |
+    ///          |       |
+    ///          +-------+
+    /// ```
+    #[must_use = "Use new CSG"]
     pub fn difference(&self, other: &CSG<S>) -> CSG<S> {
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
@@ -311,7 +311,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         // (If you need to exclude lines/points that lie inside other, you'd need more checks here.)
         for g in &self.geometry.0 {
             match g {
-                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {}, // skip
+                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {} // skip
                 _ => final_gc.0.push(g.clone()),
             }
         }
@@ -323,20 +323,20 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         }
     }
 
-    // Return a new CSG representing space in both this CSG and the
-    // other CSG. Neither this CSG nor the other CSG are modified.
-    // 
-    //     let c = a.intersect(b);
-    // 
-    //     +-------+
-    //     |       |
-    //     |   a   |
-    //     |    +--+----+   =   +--+
-    //     +----+--+    |       +--+
-    //          |   b   |
-    //          |       |
-    //          +-------+
-    // 
+    /// Return a new CSG representing intersection of the two CSG's.
+    ///
+    /// ```no_run
+    /// let c = a.intersect(b);
+    ///     +-------+
+    ///     |       |
+    ///     |   a   |
+    ///     |    +--+----+   =   +--+
+    ///     +----+--+    |       +--+
+    ///          |   b   |
+    ///          |       |
+    ///          +-------+
+    /// ```
+    #[must_use = "Use new CSG"]
     pub fn intersection(&self, other: &CSG<S>) -> CSG<S> {
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
@@ -366,13 +366,13 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         // todo: detect intersection of non-polygons
         for g in &self.geometry.0 {
             match g {
-                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {}, // skip
+                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {} // skip
                 _ => final_gc.0.push(g.clone()),
             }
         }
         for g in &other.geometry.0 {
             match g {
-                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {}, // skip
+                Geometry::Polygon(_) | Geometry::MultiPolygon(_) => {} // skip
                 _ => final_gc.0.push(g.clone()),
             }
         }
@@ -383,22 +383,22 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
             metadata: self.metadata.clone(),
         }
     }
-    
-    // Return a new CSG representing space in this CSG excluding the space in the
-    // other CSG plus the space in the other CSG excluding the space in this CSG.
-    // Neither this CSG nor the other CSG are modified.
-    // 
-    //     let c = a.xor(b);
-    // 
-    //     +-------+            +-------+
-    //     |       |            |       |
-    //     |   a   |            |   a   |
-    //     |    +--+----+   =   |    +--+----+
-    //     +----+--+    |       +----+--+    |
-    //          |   b   |            |       |
-    //          |       |            |       |
-    //          +-------+            +-------+
-    // 
+
+    /// Return a new CSG representing space in this CSG excluding the space in the
+    /// other CSG plus the space in the other CSG excluding the space in this CSG.
+    ///
+    /// ```no_run
+    /// let c = a.xor(b);
+    ///     +-------+            +-------+
+    ///     |       |            |       |
+    ///     |   a   |            |   a   |
+    ///     |    +--+----+   =   |    +--+----+
+    ///     +----+--+    |       +----+--+    |
+    ///          |   b   |            |       |
+    ///          |       |            |       |
+    ///          +-------+            +-------+
+    /// ```
+    #[must_use = "Use new CSG"]
     pub fn xor(&self, other: &CSG<S>) -> CSG<S> {
         // A \ B
         let a_sub_b = self.difference(other);
@@ -413,15 +413,15 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
         // -- 2D geometry-based approach only (no polygon-based Node usage here) --
         let polys1 = gc_to_polygons(&self.geometry);
         let polys2 = gc_to_polygons(&other.geometry);
-    
+
         // Perform symmetric difference (XOR)
         let xored = polys1.xor(&polys2);
         let oriented = xored.orient(Direction::Default);
-    
+
         // Wrap in a new GeometryCollection
         let mut final_gc = GeometryCollection::default();
         final_gc.0.push(Geometry::MultiPolygon(oriented));
-    
+
         // Re-insert lines & points from both sets
         for g in &self.geometry.0 {
             match g {
@@ -435,7 +435,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
                 _ => final_gc.0.push(g.clone()),
             }
         }
-    
+
         CSG {
             // If you also want a polygon-based Node XOR, you'd need to implement that similarly
             polygons: self.polygons.clone(),
