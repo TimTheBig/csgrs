@@ -202,7 +202,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
 
     /// Return a new CSG representing union of the two CSG's.
     ///
-    /// ```no_run
+    /// ```ignore
     /// let c = a.union(b);
     ///     +-------+            +-------+
     ///     |       |            |       |
@@ -264,7 +264,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
 
     /// Return a new CSG representing diffarence of the two CSG's.
     ///
-    /// ```no_run
+    /// ```ignore
     /// let c = a.difference(b);
     ///     +-------+            +-------+
     ///     |       |            |       |
@@ -320,7 +320,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
 
     /// Return a new CSG representing intersection of the two CSG's.
     ///
-    /// ```no_run
+    /// ```ignore
     /// let c = a.intersect(b);
     ///     +-------+
     ///     |       |
@@ -382,7 +382,7 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
     /// Return a new CSG representing space in this CSG excluding the space in the
     /// other CSG plus the space in the other CSG excluding the space in this CSG.
     ///
-    /// ```no_run
+    /// ```ignore
     /// let c = a.xor(b);
     ///     +-------+            +-------+
     ///     |       |            |       |
