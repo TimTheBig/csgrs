@@ -213,8 +213,8 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
     ///          |       |            |       |
     ///          +-------+            +-------+
     /// ```
-    #[must_use = "Use new CSG representing space in both CSG's"]
     pub fn union(&self, other: &CSG<S>) -> CSG<S> {
+    #[must_use = "Use the new CSG representing space in both CSG's"]
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
 
@@ -275,8 +275,8 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
     ///          |       |
     ///          +-------+
     /// ```
-    #[must_use = "Use new CSG"]
     pub fn difference(&self, other: &CSG<S>) -> CSG<S> {
+    #[must_use = "Use the new CSG"]
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
 
@@ -331,8 +331,8 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
     ///          |       |
     ///          +-------+
     /// ```
-    #[must_use = "Use new CSG"]
     pub fn intersection(&self, other: &CSG<S>) -> CSG<S> {
+    #[must_use = "Use the new CSG"]
         let mut a = Node::new(&self.polygons);
         let mut b = Node::new(&other.polygons);
 
@@ -393,8 +393,8 @@ impl<S: Clone + Debug> CSG<S> where S: Clone + Send + Sync {
     ///          |       |            |       |
     ///          +-------+            +-------+
     /// ```
-    #[must_use = "Use new CSG"]
     pub fn xor(&self, other: &CSG<S>) -> CSG<S> {
+    #[must_use = "Use the new CSG"]
         // A \ B
         let a_sub_b = self.difference(other);
 
@@ -2481,6 +2481,7 @@ fn gc_to_polygons(gc: &GeometryCollection<Real>) -> MultiPolygon<Real> {
 }
 
 // Build a small helper for hashing endpoints:
+/// A small helper for hashing endpoints
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct EndKey(i64, i64, i64);
 

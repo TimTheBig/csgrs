@@ -404,7 +404,7 @@ Patterns we work to follow throughout the library to improve performance and mem
 - bending
 - gears
 - lead-ins, lead-outs
-- gpu accelleration?
+- gpu acceleration?
 - reduce dependency feature sets
 - space filling curves, hilbert sort polygons / points
 - identify more candidates for par_iter: minkowski, polygon_from_slice, is_manifold
@@ -430,7 +430,7 @@ Patterns we work to follow throughout the library to improve performance and mem
 - test geo_booleanop as alternative to geo's built-in boolean ops.
 - adapt cavalier_contours demo application
 - rethink metadata
-  - support storing UV[W] coordinates with vertexes at compile time (try to keep runtime cost low too)
+  - support storing UV[W] coordinates with vertices at compile time (try to keep runtime cost low too)
   - accomplish equivalence checks and memory usage reduction by using a hashmap or references instead of storing metadata with each node
   - with equivalence checks, returning sorted metadata becomes easy
 - chamfers
