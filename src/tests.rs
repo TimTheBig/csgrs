@@ -552,7 +552,7 @@ fn test_csg_difference() {
     let small_cube: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None).translate(-1.0, -1.0, -1.0); // radius=1 => spans [-1,1]
 
     let result = big_cube.difference(&small_cube);
-    let polys = result.to_polygons();
+    let polys = result.polygons;
     assert!(
         !polys.is_empty(),
         "Subtracting a smaller cube should leave polygons"
@@ -570,6 +570,9 @@ fn test_csg_union2() {
     let c1: CSG<()> = CSG::cube(2.0, 2.0, 2.0, None); // cube from (-1..+1) if that's how you set radius=1 by default
     let c2: CSG<()> = CSG::sphere(1.0, 16, 8, None); // default sphere radius=1
     let unioned = c1.union(&c2);
+
+    assert_eq!(unioned.polygons.len(), 141);
+
     // We can check bounding box is bigger or at least not smaller than either shape’s box
     let bb_union = unioned.bounding_box();
     let bb_cube = c1.bounding_box();

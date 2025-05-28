@@ -75,9 +75,9 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
         csg
     }
 
-    /// Convert internal polylines into polygons and return along with any existing internal polygons.
+    /// Convert internal 2d polylines into polygons and return along with any existing internal polygons.
     pub fn to_polygons(&self) -> Vec<Polygon<S>> {
-    
+
         /// Helper function to convert a geo::Polygon into one or more Polygon<S> entries.
         fn process_polygon<S>(
             poly2d: &geo::Polygon<Real>,
@@ -89,11 +89,11 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
             for c in poly2d.exterior().coords_iter() {
                 outer_vertices_3d.push(Vertex::new(Point3::new(c.x, c.y, 0.0), Vector3::z()));
             }
-        
+
             if outer_vertices_3d.len() >= 3 {
                 all_polygons.push(Polygon::new(outer_vertices_3d, metadata.clone()));
             }
-        
+
             // 2. Convert interior rings (holes), if needed as separate polygons.
             for ring in poly2d.interiors() {
                 let mut hole_vertices_3d = Vec::new();
@@ -107,7 +107,7 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
                 }
             }
         }
-        
+
         let mut all_polygons = Vec::new();
 
         for geom in &self.geometry {    
@@ -124,7 +124,7 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
                 _ => {}
             }
         }
-    
+
         all_polygons
     }
 
@@ -221,14 +221,14 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
             result
         }
     }
-    
+
     /// Split polygons into (may_touch, cannot_touch) using bounding‑box tests
     fn partition_polys(
         polys: &[Polygon<S>],
         other_bb: &Aabb,
     ) -> (Vec<Polygon<S>>, Vec<Polygon<S>>) {
-        let mut maybe = Vec::new();
-        let mut never = Vec::new();
+        let mut maybe = Vec::with_capacity(polys.len());
+        let mut never = Vec::with_capacity(polys.len());
         for p in polys {
             if p.bounding_box().intersects(other_bb) {
                 maybe.push(p.clone());
@@ -238,7 +238,6 @@ impl<S: Clone + Debug + Send + Sync> CSG<S> {
         }
         (maybe, never)
     }
-
 
     /// Return a new CSG representing union of the two CSG's.
     ///
